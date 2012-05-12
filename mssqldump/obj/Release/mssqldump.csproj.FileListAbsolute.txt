@@ -1,5 +1,0 @@
-E:\Users\alize\My Documents\Projects\NetadminTools\mssqldump\mssqldump\bin\Release\mssqldump.exe
-E:\Users\alize\My Documents\Projects\NetadminTools\mssqldump\mssqldump\bin\Release\mssqldump.pdb
-E:\Users\alize\My Documents\Projects\NetadminTools\mssqldump\mssqldump\obj\Release\ResolveAssemblyReference.cache
-E:\Users\alize\My Documents\Projects\NetadminTools\mssqldump\mssqldump\obj\Release\mssqldump.exe
-E:\Users\alize\My Documents\Projects\NetadminTools\mssqldump\mssqldump\obj\Release\mssqldump.pdb
