@@ -5,3 +5,5 @@ Usage: >mssqldump.exe {servername} {database_name} {path for dump file}
 ex: mssqldump.exe (local) Northwinds "C:\SQL Dumps\"
 
 The provided binary in \bin\release will work with either x86 or x86_64 architecture.
+
+The solution was created using Visual Studio 2008.
