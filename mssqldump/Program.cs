@@ -11,8 +11,10 @@ namespace mssqldump
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            if (args.Length < 2) { ShowUsage(); return 1; }
+
             Server sqlServer = new Server(args[0]);
             Database db = default(Database);
 
@@ -145,6 +147,13 @@ namespace mssqldump
                     }
                 }
             }
+
+            return 0;
+        }
+
+        private static void ShowUsage()
+        {
+            Console.WriteLine("Usage: mssqldump [server] [database] [outputpath]");
         }
 
         private static string pad(string value, int length)
