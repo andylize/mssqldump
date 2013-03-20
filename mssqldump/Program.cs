@@ -22,9 +22,11 @@ namespace mssqldump
 
             string filePath = args[2];
 
+            DateTime now = DateTime.Now;
             // set up text file
-            string filename = filePath + DateTime.Now.Year.ToString() + pad(DateTime.Now.Month.ToString(), 2) + pad(DateTime.Now.Day.ToString(), 2) + pad(DateTime.Now.Hour.ToString(), 2) + pad(DateTime.Now.Minute.ToString(), 2) + "_" + args[1] + ".sql";
-            
+            string filename = string.Format("{0:0000}{1:00}{2:00}{3:00}{4:00}_{5}.sql", now.Year, now.Month, now.Day, now.Hour, now.Minute, args[1]);
+            filename = Path.Combine(filePath, filename);
+
             Scripter scrp = default(Scripter);
 
             scrp = new Scripter(sqlServer);
@@ -58,7 +60,7 @@ namespace mssqldump
                 foreach (Index ix in tb.Indexes)
                 {
                     if (ix.IsSystemObject == false)
-                    {                        
+                    {
                         using (StreamWriter w = File.AppendText(filename))
                         {
                             StringCollection indexScript = ix.Script();
