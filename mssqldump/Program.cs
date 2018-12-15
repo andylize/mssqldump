@@ -11,8 +11,10 @@ namespace mssqldump
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
+            if (args.Length < 2) { ShowUsage(); return 1; }
+
             Server sqlServer = new Server(args[0]);
             Database db = default(Database);
 
@@ -20,9 +22,11 @@ namespace mssqldump
 
             string filePath = args[2];
 
+            DateTime now = DateTime.Now;
             // set up text file
-            string filename = filePath + DateTime.Now.Year.ToString() + pad(DateTime.Now.Month.ToString(), 2) + pad(DateTime.Now.Day.ToString(), 2) + pad(DateTime.Now.Hour.ToString(), 2) + pad(DateTime.Now.Minute.ToString(), 2) + "_" + args[1] + ".sql";
-            
+            string filename = string.Format("{0:0000}{1:00}{2:00}{3:00}{4:00}_{5}.sql", now.Year, now.Month, now.Day, now.Hour, now.Minute, args[1]);
+            filename = Path.Combine(filePath, filename);
+
             Scripter scrp = default(Scripter);
 
             scrp = new Scripter(sqlServer);
@@ -33,12 +37,15 @@ namespace mssqldump
 
 
             Urn[] smoObjects = new Urn[2];
+            int objectCount = 0;
 
             // write each table
             foreach (Table tb in db.Tables) 
             {
                 if (tb.IsSystemObject == false)
                 {
+                    Console.WriteLine("Table: {0}", tb.Urn);
+
                     smoObjects = new Urn[1];
                     smoObjects[0] = tb.Urn;
 
@@ -47,16 +54,23 @@ namespace mssqldump
                         foreach (string s in scrp.EnumScript(new Urn[] { tb.Urn }))
                         {
                             w.WriteLine(s);
+                            Console.Write(".");
+                            objectCount++;
                         }
                         w.Close();
                     }
                 }
+                Console.WriteLine();
 
+                Console.Write("-Indexes: ");
                 // write each index
                 foreach (Index ix in tb.Indexes)
                 {
                     if (ix.IsSystemObject == false)
-                    {                        
+                    {
+                        Console.Write(".");
+                        objectCount++;
+                        
                         using (StreamWriter w = File.AppendText(filename))
                         {
                             StringCollection indexScript = ix.Script();
@@ -68,12 +82,17 @@ namespace mssqldump
                         }
                     }
                 }
+                Console.WriteLine();
 
+                Console.Write("-Triggers: ");
                 // write each trigger
                 foreach (Trigger trig in tb.Triggers)
                 {
                     if (trig.IsSystemObject == false)
                     {
+                        Console.Write(".");
+                        objectCount++; 
+                        
                         smoObjects = new Urn[1];
                         smoObjects[0] = trig.Urn;
 
@@ -87,13 +106,21 @@ namespace mssqldump
                         }
                     }
                 }
+                Console.WriteLine();//finished triggers
+
+                //next table
+                Console.WriteLine();
             }
-            
+
             // write each view
+            Console.Write("Views: ");
             foreach (View vw in db.Views)
             {
                 if (vw.IsSystemObject == false)
                 {
+                    Console.Write(".");
+                    objectCount++;
+
                     smoObjects = new Urn[1];
                     smoObjects[0] = vw.Urn;
 
@@ -107,12 +134,17 @@ namespace mssqldump
                     }
                 }
             }
+            Console.WriteLine();
 
+            Console.Write("Stored Procedures: ");
             // write each stored procedure
             foreach (StoredProcedure sp in db.StoredProcedures)
             {
                 if (sp.IsSystemObject == false)
                 {
+                    Console.Write(".");
+                    objectCount++;
+                    
                     smoObjects = new Urn[1];
                     smoObjects[0] = sp.Urn;
 
@@ -126,8 +158,10 @@ namespace mssqldump
                     }
                 }
             }
+            Console.WriteLine();
 
             // write each user defined funtion
+            Console.Write("UserDefinedFunctions: ");
             foreach (UserDefinedFunction udf in db.UserDefinedFunctions)
             {
                 if (udf.IsSystemObject == false)
@@ -140,11 +174,31 @@ namespace mssqldump
                         foreach (string s in scrp.EnumScript(new Urn[] { udf.Urn }))
                         {
                             w.WriteLine(s);
+                            Console.Write(".");
                         }
                         w.Close();
                     }
+                    objectCount++;
                 }
             }
+            Console.WriteLine();
+
+            ReportProgress(objectCount);
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("File written: {0}", filename);
+
+            return 0;
+        }
+
+        private static void ReportProgress(int objectCount)
+        {
+            Console.WriteLine("Objects written: {0}", objectCount);
+        }
+
+        private static void ShowUsage()
+        {
+            Console.WriteLine("Usage: mssqldump [server] [database] [outputpath]");
         }
 
         private static string pad(string value, int length)
